@@ -142,6 +142,7 @@ export default {
           label: '日期范围',
           comp: 'el-date-picker',
           span: 2,
+          colSpan: 6,
           defaultVal: [moment().add(-1, 'days').format('yyyy-MM-DD'), moment().format('yyyy-MM-DD')],
           bind: {
             type: 'daterange',

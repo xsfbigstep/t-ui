@@ -5,62 +5,64 @@
     size="small"
     id="t_query_condition"
     class="t-query-condition"
-    :style="{
-    'grid-template-areas': gridAreas,
-    'grid-template-columns': `repeat(${colLength}, minmax(0px, ${100 / colLength
-      }%))`,
-  }"
     @submit.native.prevent
   >
-    <el-form-item
-      v-for="(opt, i) in cOpts"
-      :key="i"
-      :label="opt.label"
-      :style="{ gridArea: i }"
-      :class="[opt.className, { render_label: opt.labelRender }]"
-    >
-      <!-- 自定义label -->
-      <template #label v-if="opt.labelRender">
-        <render-comp :createElementFunc="opt.labelRender" />
-      </template>
-      <!-- 自定义输入框插槽 -->
-      <template v-if="opt.slotName">
-        <slot :name="opt.slotName" :param="form" :scope="form"></slot>
-      </template>
-      <OptComponent
-        v-if="!opt.slotName"
-        v-bind="opt"
-        :opt="opt"
-        :ref="opt.comp === 't-select-table' ? `tselecttableref-${i}` : ''"
-        :form="form"
-        :value="form[opt.dataIndex]"
-        @change="change"
-      />
-    </el-form-item>
-    <el-form-item
-      v-if="Object.keys(cOpts).length > 0"
-      label-width="0"
-      style="grid-area: submit_btn"
-      :class="['btn', { flex_end: cellLength % colLength === 0 }]"
-    >
-      <el-button
-        class="btn_check"
-        @click="checkHandle"
-        :loading="loading"
-        v-bind="queryAttrs"
-      >{{ queryAttrs.btnTitle }}</el-button>
-      <el-button
-        v-if="reset"
-        class="btn_reset"
-        v-bind="resetAttrs"
-        @click="resetHandle"
-      >{{ resetAttrs.btnTitle }}</el-button>
-      <slot name="querybar"></slot>
-      <el-button v-if="originCellLength > colLength && isShowOpen" type="text" @click="openCilck">
-        {{ controlText }}
-        <i :class="open ? 'el-icon-arrow-up' : 'el-icon-arrow-down'"></i>
-      </el-button>
-    </el-form-item>
+    <el-row>
+      <el-col :span="20">
+        <el-row>
+          <el-col v-for="(opt, i) in cOpts" :key="i" :span="opt.colSpan || 6">
+            <el-form-item
+              :label="opt.label"
+              :class="[opt.className, { render_label: opt.labelRender }]"
+            >
+              <!-- 自定义label -->
+              <template #label v-if="opt.labelRender">
+                <render-comp :createElementFunc="opt.labelRender" />
+              </template>
+              <!-- 自定义输入框插槽 -->
+              <template v-if="opt.slotName">
+                <slot :name="opt.slotName" :param="form" :scope="form"></slot>
+              </template>
+              <OptComponent
+                v-if="!opt.slotName"
+                v-bind="opt"
+                :opt="opt"
+                :ref="opt.comp === 't-select-table' ? `tselecttableref-${i}` : ''"
+                :form="form"
+                :value="form[opt.dataIndex]"
+                @change="change"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-col>
+      <el-col :span="4">
+        <el-form-item
+          v-if="Object.keys(cOpts).length > 0"
+          label-width="0"
+          style="grid-area: submit_btn"
+          :class="['btn', { flex_end: cellLength % colLength === 0 }]"
+        >
+          <el-button
+            class="btn_check"
+            @click="checkHandle"
+            :loading="loading"
+            v-bind="queryAttrs"
+          >{{ queryAttrs.btnTitle }}</el-button>
+          <el-button
+            v-if="reset"
+            class="btn_reset"
+            v-bind="resetAttrs"
+            @click="resetHandle"
+          >{{ resetAttrs.btnTitle }}</el-button>
+          <slot name="querybar"></slot>
+          <el-button v-if="originCellLength > colLength && isShowOpen" type="text" @click="openCilck">
+            {{ controlText }}
+            <i :class="open ? 'el-icon-arrow-up' : 'el-icon-arrow-down'"></i>
+          </el-button>
+        </el-form-item>
+      </el-col>
+    </el-row>
   </el-form>
 </template>
 
@@ -170,41 +172,6 @@ export default {
         acc[field] = opt
         return acc
       }, {})
-    },
-    gridAreas() {
-      // grid布局按钮位置
-      const { colLength, cOpts } = this
-      const fields = Object.keys(cOpts)
-      let rowIndex = 0
-      let rowSpan = 0
-      const areas = [[]]
-      for (let fieldIndex = 0; fieldIndex < fields.length; fieldIndex++) {
-        const field = fields[fieldIndex]
-        const opt = cOpts[field]
-        const span = Math.min(opt.span ?? 1, 4) // 最大4
-        if (rowSpan + span > colLength) {
-          if (rowSpan < colLength) {
-            areas[rowIndex].push('.')
-          }
-          rowSpan = 0
-          areas[++rowIndex] = []
-        }
-        rowSpan += span
-        for (let index = 0; index < span; index++) {
-          areas[rowIndex].push(field)
-        }
-      }
-      if (areas[rowIndex].length === colLength) {
-        areas.push(['submit_btn', 'submit_btn', 'submit_btn', 'submit_btn'])
-      } else {
-        while (areas[rowIndex].length < colLength) {
-          areas[rowIndex].push('submit_btn')
-        }
-      }
-      return areas.reduce((acc, cur) => {
-        acc += `'${cur.join(' ')}'\n`
-        return acc
-      }, '')
     },
     // 占用单元格长度
     span() {
@@ -341,7 +308,6 @@ export default {
 <style lang="scss">
 .t-query-condition.el-form {
   position: relative;
-  display: grid;
   gap: 2px 8px;
   margin-bottom: -7px;
   text-align: left;
